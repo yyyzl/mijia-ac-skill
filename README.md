@@ -99,17 +99,11 @@ uv run --locked mijia-ac --config ../mijia-ac-private/config.toml power off --ap
 
 如果只使用 CLI，跳过本节。Hermes Skill 需要单独安装；它不包含 Python CLI、设备配置或授权文件。先按上面的步骤准备好 CLI 与私有配置。
 
-下面的命令仅供读者在**自己的 Hermes 环境**执行，不属于项目构建或发布流程。`inspect` 查看实际来源与内容，`install` 安装 Skill，`list` 确认 Hermes 已发现它。安装方式参见 [Hermes Skill 文档](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/skills.md)。
-
-```console
-hermes skills inspect yyyzl/mijia-ac-skill/skills/mijia-ac-control
-hermes skills install yyyzl/mijia-ac-skill/skills/mijia-ac-control
-hermes skills list
-```
+前面已克隆本仓库。将其中的 `skills/mijia-ac-control` **整个目录**复制到本机 `~/.hermes/skills/mijia-ac-control/`，然后运行 `hermes skills list` 确认 Hermes 已发现它。若目标位置已有同名 Skill，先检查来源与内容，不要直接覆盖。安装位置及发现规则参见 [Hermes Skill 文档](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/skills.md)。
 
 新会话中可直接说“读取米家空调状态”或“把米家空调设定温度调到 24 度”，也可显式使用 `/mijia-ac-control`。首次使用时，只向 Agent 提供**本机仓库位置和私有配置文件路径**，不要提供配置内容、DID、授权码或设备清单。Agent 会根据 [SKILL.md](skills/mijia-ac-control/SKILL.md) 先确定目标与动作；路径不明时应停下询问，不能猜测其他账号或设备。安装后的 Skill 需要能在本机使用 `terminal` 调用已安装的 CLI。
 
-Hermes 安装 Skill 与安装 Python CLI 是两步；只完成其中一步，无法通过自然语言控制设备。如果 `inspect` 显示的仍是旧版，可在核对目录内容后，将本仓库的 `skills/mijia-ac-control` **整个目录**手动放入 `~/.hermes/skills/mijia-ac-control/`；已有同名 Skill 时先检查来源，避免覆盖自己的版本。安装后如当前会话未发现 Skill，开启新会话或按 Hermes 文档刷新。
+Hermes 安装 Skill 与安装 Python CLI 是两步；只完成其中一步，无法通过自然语言控制设备。安装后如当前会话未发现 Skill，开启新会话或按 Hermes 文档刷新。
 
 ## 兼容性与常见问题
 
