@@ -14,7 +14,11 @@ def checker():
     spec.loader.exec_module(module)
     return module
 
-@pytest.mark.parametrize('name', ['auth.json','nested/token.json','.env','state/devices.json','.venv/file.py','reports/result.txt','config.toml'])
+@pytest.mark.parametrize('name', [
+    'auth.json', 'nested/token.json', '.env', 'state/devices.json',
+    '.venv/file.py', 'reports/result.txt', 'config.toml',
+    'mijia-ac-private/notes.txt', 'debug.log', 'account.local.json', 'state.sqlite',
+])
 def test_reject_sensitive_names(tmp_path, name):
     p=tmp_path/name
     p.parent.mkdir(parents=True,exist_ok=True)

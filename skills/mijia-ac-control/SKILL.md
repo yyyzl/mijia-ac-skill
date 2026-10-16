@@ -1,18 +1,34 @@
 ---
 name: mijia-ac-control
-description: 米家空调状态、设定温度、开关和模式控制；室温测量、自动恒温、账号客服与硬件选购另行处理.
+description: 读取米家空调状态，设置设定温度、开关或模式；相对调温先回读设定值，不用于室温测量或自动恒温。
 version: "0.1.0"
 author: "yyyzl"
 license: MIT
 platforms: ['windows', 'macos', 'linux']
 ---
 
-# 米家空调控制
+# 米家空调控制 Skill
 
-1. **定位**：确认目标配置和请求动作。首次安装、平台环境或手工授权未完成时，读 [准备](references/setup.md)。完成条件：入口可用、配置和独立凭据状态均在仓库外，目标无歧义；授权内容留在用户本机。
-2. **选分支**：查询用 `status`；绝对设温用 `set-temp`；相对调温先读取当前**设定温度**，精确加减后按配置范围/步长检查；明确开关用 `power`；模式用 `mode`，首次适配读 [模式与故障](references/modes-failures.md)。完成条件：请求已转为有限、合法的明确动作；设定温度不当作室温。
-3. **预览与授权**：在已安装仓库根用 terminal 调用 `uv run --locked mijia-ac`，显式传 `--config`；pip 安装用 `mijia-ac`。参数独立传递，参数详情查分支 `--help`。默认预览不读设备；仅对应动作已有明确授权才加 `--apply`。关机设温和模式另需开机许可及 `--allow-power-on`。完成条件：计划、执行授权与开机副作用一致；未许可时停止写入。
-4. **核对**：写后以 wrapper 独立回读为准；模式同时核对 on。失败立即停止，读 [模式与故障](references/modes-failures.md)，不补偿或盲重试。完成条件：回读匹配，或明确失败阶段及可能已改变的状态。禁止无人值守联动和复制其他 skill 的账号状态。
-5. **交付**：报告 target/config、requested action、preview/executed、必要 before/after、independent readback、match/failure、side effects、physical evidence/unknown。隐藏 DID、凭据和私人绝对路径。预览标明未读/未写；失败写明已知动作及未知结果。云端匹配仅是快照，物理制冷/制热与室温证据缺失时标 unknown。
+用已安装的 `mijia-ac` CLI 读取或控制**设定温度**、开关和模式。CLI 执行精确 DID 校验、默认预览与写后回读；本 Skill 负责理解请求、选择命令和说明结果。它不提供室温测量或无人值守恒温。
 
-维护时按 [评测](references/evaluation.md) 运行 `evals/` 的触发与输出契约；fixture、command、model 证据分别记录。
+## 何时使用
+
+用户询问米家空调状态，要求设为某个温度、升降设定温度、开关机或切换已核对的模式时使用。若用户要的是室温、设备选购或账号客服，直接说明本 Skill 的能力边界。
+
+## 准备
+
+- 需要可用的 `terminal`、已安装的 CLI、仓库位置（uv 安装时）及**仓库外**的配置文件路径。配置文件内的设备 DID、profile、状态目录与本机授权须匹配；不要把配置内容或授权资料读入聊天。
+- 路径或目标设备不明确时，只向用户询问本机路径或目标描述，不猜测账号、目录或设备。首次安装、授权和 spec 核对请读 [首次准备](references/setup.md)。准备完成的标志是 CLI 帮助可用、用户已在本机配置目标设备，且 `status` 能读取所需属性。
+
+## 执行
+
+1. **确定动作**：查询用 `status`；绝对目标用 `set-temp <温度>`；“升高/降低 N 度”先运行 `status`，按返回的**设定温度**计算绝对目标，再让 CLI 预览校验范围与步长；开关用 `power on|off`；模式用 `mode cool|heat`。模式首次适配读 [模式与故障](references/modes-failures.md)。完成条件：动作和目标明确，未把设定温度说成室温。
+2. **预览**：写操作先不带 `--apply` 调用 CLI，确认参数有效。预览不读设备，因此相对调温所需的 `status` 是单独的在线读取。若用户只要求预览，到此停止。完成条件：计划的目标值、目标设备和可能开机的副作用已核对。
+3. **执行**：用户明确要求改变设备状态时，加 `--apply`。关机状态下设温或切换模式会被 CLI 拒绝；只有用户也明确允许先开机，才加 `--allow-power-on`。在 `terminal` 中按当前 shell 的规则引用配置路径，不把用户输入拼成额外命令。完成条件：仅执行获准的动作；缺少开机许可时停止写入。
+4. **核对并回复**：以 CLI 的独立回读和退出码判断结果。成功时简短说明执行的动作及回读值；预览时说明未读/未写。失败时停止，说明已知阶段及设备可能已变化的部分，按 [模式与故障](references/modes-failures.md) 处理，不盲重试或回滚。隐藏 DID、凭据和私人绝对路径；云端回读不证明物理制冷或制热。
+
+## 命令形态
+
+在仓库根用 `terminal` 执行 `uv run --locked mijia-ac --config <私有配置路径> status` 或 `... set-temp 24 [--apply]`。pip 安装者直接使用 `mijia-ac --config <私有配置路径> ...`。命令参数以 `mijia-ac --help` 及子命令帮助为准；不要直接用上游 `mi set` 绕过本 CLI。
+
+维护 description 或流程时读 [评测说明](references/evaluation.md) 并检查 `evals/`；记录式 fixture 不等于真实模型或设备执行证据。

@@ -28,11 +28,12 @@ def inspect_paths(root, paths, blobs=None):
         parts = [s.lower() for s in rel.parts]
         base = parts[-1] if parts else ''
         forbidden = (rel.is_absolute() or '..' in parts or
-                     any(s in {'.git','.venv','venv','__pycache__','.pytest_cache','reports','state'}
-                         or s.endswith('-state') for s in parts) or
+                     any(s in {'.git','.venv','venv','__pycache__','.pytest_cache','reports','state','private'}
+                         or s.endswith(('-state','-private')) for s in parts) or
                      base in {'auth.json','devices.json','config.toml'} or
                      base.startswith(('.env','credentials','config.local.')) or
-                     base.endswith(('.local.toml','.pem','.key','.pyc')) or
+                     base.endswith(('.local.toml','.local.json','.local.yaml','.local.yml',
+                                    '.pem','.key','.pyc','.log','.db','.sqlite','.sqlite3')) or
                      ('token' in base and base.endswith('.json')))
         if forbidden:
             problems.append((name,'禁止发布的本地文件'))
