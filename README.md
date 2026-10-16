@@ -95,9 +95,11 @@ uv run --locked mijia-ac --config ../mijia-ac-private/config.toml power off --ap
 
 开关机还支持 `power on`；模式切换支持 `mode cool|heat`，前提是已核对并填写对应枚举。若设备关机，`set-temp` 和 `mode` 默认停止且不写入；获得开机许可后，CLI 先开机并确认，再写目标值。写入后 CLI 进行独立回读；失败时停止，不自动重试或回滚，设备可能已经改变。云端回读匹配不代表物理制冷或制热已发生。
 
-## 在 Hermes Agent 中使用
+## 可选：在 Hermes Agent 中使用
 
-先按上面的步骤安装 CLI 并准备好私有配置。Skill **不包含** CLI、授权文件或设备配置。Hermes 支持从 GitHub 路径安装 Skill；先检查来源，再安装并确认它出现在列表中：[Hermes Skill 文档](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/skills.md)。
+如果只使用 CLI，跳过本节。Hermes Skill 需要单独安装；它不包含 Python CLI、设备配置或授权文件。先按上面的步骤准备好 CLI 与私有配置。
+
+下面的命令仅供读者在**自己的 Hermes 环境**执行，不属于项目构建或发布流程。`inspect` 查看实际来源与内容，`install` 安装 Skill，`list` 确认 Hermes 已发现它。安装方式参见 [Hermes Skill 文档](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/skills.md)。
 
 ```console
 hermes skills inspect yyyzl/mijia-ac-skill/skills/mijia-ac-control
