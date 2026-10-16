@@ -1,13 +1,10 @@
 ---
 name: mijia-ac-control
 description: 读取米家空调状态，设置设定温度、开关或模式；相对调温先回读设定值，不用于室温测量或自动恒温。
-version: "0.1.0"
-author: "yyyzl"
 license: MIT
-platforms: ['windows', 'macos', 'linux']
 ---
 
-# 米家空调控制 Skill
+# 米家空调控制
 
 用已安装的 `mijia-ac` CLI 读取或控制**设定温度**、开关和模式。CLI 执行精确 DID 校验、默认预览与写后回读；本 Skill 负责理解请求、选择命令和说明结果。它不提供室温测量或无人值守恒温。
 
@@ -17,18 +14,18 @@ platforms: ['windows', 'macos', 'linux']
 
 ## 准备
 
-- 需要可用的 `terminal`、已安装的 CLI、仓库位置（uv 安装时）及**仓库外**的配置文件路径。配置文件内的设备 DID、profile、状态目录与本机授权须匹配；不要把配置内容或授权资料读入聊天。
+- 需要本机命令执行能力、已安装的 CLI、仓库位置（uv 安装时）及**仓库外**的配置文件路径。配置文件内的设备 DID、profile、状态目录与本机授权须匹配；不要把配置内容或授权资料读入聊天。
 - 路径或目标设备不明确时，只向用户询问本机路径或目标描述，不猜测账号、目录或设备。首次安装、授权和 spec 核对请读 [首次准备](references/setup.md)。准备完成的标志是 CLI 帮助可用、用户已在本机配置目标设备，且 `status` 能读取所需属性。
 
 ## 执行
 
 1. **确定动作**：查询用 `status`；绝对目标用 `set-temp <温度>`；“升高/降低 N 度”先运行 `status`，按返回的**设定温度**计算绝对目标，再让 CLI 预览校验范围与步长；开关用 `power on|off`；模式用 `mode cool|heat`。模式首次适配读 [模式与故障](references/modes-failures.md)。完成条件：动作和目标明确，未把设定温度说成室温。
 2. **预览**：写操作先不带 `--apply` 调用 CLI，确认参数有效。预览不读设备，因此相对调温所需的 `status` 是单独的在线读取。若用户只要求预览，到此停止。完成条件：计划的目标值、目标设备和可能开机的副作用已核对。
-3. **执行**：用户明确要求改变设备状态时，加 `--apply`。关机状态下设温或切换模式会被 CLI 拒绝；只有用户也明确允许先开机，才加 `--allow-power-on`。在 `terminal` 中按当前 shell 的规则引用配置路径，不把用户输入拼成额外命令。完成条件：仅执行获准的动作；缺少开机许可时停止写入。
+3. **执行**：用户明确要求改变设备状态时，加 `--apply`。关机状态下设温或切换模式会被 CLI 拒绝；只有用户也明确允许先开机，才加 `--allow-power-on`。用当前 Agent 可用的本机命令工具执行，并按当前 shell 的规则引用配置路径，不把用户输入拼成额外命令。完成条件：仅执行获准的动作；缺少开机许可时停止写入。
 4. **核对并回复**：以 CLI 的独立回读和退出码判断结果。成功时简短说明执行的动作及回读值；预览时说明未读/未写。失败时停止，说明已知阶段及设备可能已变化的部分，按 [模式与故障](references/modes-failures.md) 处理，不盲重试或回滚。隐藏 DID、凭据和私人绝对路径；云端回读不证明物理制冷或制热。
 
 ## 命令形态
 
-在仓库根用 `terminal` 执行 `uv run --locked mijia-ac --config <私有配置路径> status` 或 `... set-temp 24 [--apply]`。pip 安装者直接使用 `mijia-ac --config <私有配置路径> ...`。命令参数以 `mijia-ac --help` 及子命令帮助为准；不要直接用上游 `mi set` 绕过本 CLI。
+在仓库根执行 `uv run --locked mijia-ac --config <私有配置路径> status` 或 `... set-temp 24 [--apply]`。pip 安装者直接使用 `mijia-ac --config <私有配置路径> ...`。命令参数以 `mijia-ac --help` 及子命令帮助为准；不要直接用上游 `mi set` 绕过本 CLI。
 
 维护 description 或流程时读 [评测说明](references/evaluation.md) 并检查 `evals/`；记录式 fixture 不等于真实模型或设备执行证据。

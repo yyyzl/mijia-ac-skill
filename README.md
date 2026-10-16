@@ -1,14 +1,14 @@
-# 米家空调设定温度控制
+# 米家空调控制 Skill
 
-用命令行读取米家空调状态，或在明确要求下设置**目标温度**、开关和模式。仓库提供两部分：`mijia-ac` 是执行操作的 CLI；`mijia-ac-control` 是让 Hermes Agent 使用该 CLI 的可选 Skill。只想在终端操作，安装 CLI 即可。
+让支持 `SKILL.md` 的 Agent 读取米家空调状态，并按明确请求设置**目标温度**、开关和模式。仓库包含两部分：[`mijia-ac-control`](skills/mijia-ac-control/SKILL.md) 是给 Agent 的操作说明；`mijia-ac` 是实际执行读写的本地 CLI。Codex 等能加载 Skill、执行本机命令的 Agent 可以使用；只想在终端操作，也可以单独使用 CLI。
 
-CLI 的 `set-temp 24` 表示“设为 24 度”。“升高一度”这类相对请求由 Skill 先读取当前**设定温度**，再计算绝对目标值。本项目不测量室温，也不提供自动恒温。控制使用米家云端，需要自己的小米账号和设备；可用性取决于设备实际公开的属性。
+例如，用户说“升高一度”时，Skill 先读取当前**设定温度**，再计算目标值交给 CLI；CLI 的 `set-temp 24` 表示“设为 24 度”。本项目不测量室温，也不提供自动恒温。控制走米家云端，需要使用者自己的小米账号和设备；可用性取决于设备实际公开的属性。
 
-## 首次使用
+## 开始使用
 
-需要 Python 3.11+、[uv](https://docs.astral.sh/uv/) 和 Git。以下命令在仓库根目录执行；登录、设备发现和 spec 查询会访问你的米家账号，请在自己的终端完成。
+需要 Python 3.11+、[uv](https://docs.astral.sh/uv/) 和 Git。先审查本仓库及 [Skill 指令](skills/mijia-ac-control/SKILL.md)，再在本机安装 CLI 和 Skill。Skill 目录不包含 CLI、设备配置或授权文件；两者分别准备。登录、设备发现和 spec 查询会访问你的米家账号，请在自己的终端完成。
 
-### 1. 安装 CLI
+### 1. 获取项目并安装 CLI
 
 ```console
 git clone https://github.com/yyyzl/mijia-ac-skill.git
@@ -19,7 +19,33 @@ uv run --locked mijia-ac --help
 
 最后一条只显示帮助，不访问米家。`uv.lock` 和仓库内固定版本的 [mi_home_cli](https://github.com/slightc/mi_home_cli) 源码用于安装本项目依赖。
 
-### 2. 准备仓库外的配置
+### 2. 将 Skill 装载到 Agent
+
+把本仓库的 `skills/mijia-ac-control/` **整个目录**放进所用 Agent 的 Skill 搜索目录，确保 `SKILL.md` 与 `references/` 一起保留。不要把整个仓库当作 Skill 安装；运行时仍需访问上一步安装的 CLI。
+
+以 Codex 为例，可放在用户级 `~/.agents/skills/mijia-ac-control/`，或某个项目的 `.agents/skills/mijia-ac-control/`。其他支持 `SKILL.md` 的 Agent 按其文档选择目录；能读取 Skill 并不代表它有本机命令执行能力。若目标目录已有同名 Skill，先检查来源，不要直接覆盖。Codex 的目录与加载规则见 [官方 Skill 文档](https://developers.openai.com/codex/skills/)。
+
+从仓库根目录安装到 Codex 用户级目录，例如：
+
+```powershell
+$skillTarget = Join-Path $HOME '.agents/skills/mijia-ac-control'
+if (Test-Path $skillTarget) { throw '同名 Skill 已存在，请先检查' }
+New-Item -ItemType Directory -Force (Split-Path $skillTarget -Parent) | Out-Null
+Copy-Item -LiteralPath 'skills/mijia-ac-control' -Destination $skillTarget -Recurse
+```
+
+macOS / Linux（bash、zsh）：
+
+```bash
+skill_target="$HOME/.agents/skills/mijia-ac-control"
+if [ -e "$skill_target" ]; then echo '同名 Skill 已存在，请先检查'; exit 1; fi
+mkdir -p "$(dirname "$skill_target")"
+cp -R skills/mijia-ac-control "$skill_target"
+```
+
+在 Codex 中可输入 `$mijia-ac-control` 显式调用，也可以直接提出“读取米家空调状态”这样的请求，由 Agent 根据 Skill 描述判断是否使用。首次使用时，只提供**本机仓库位置和仓库外的配置文件路径**，不粘贴配置内容、完整 DID、授权码或设备清单。若 CLI 或配置尚未准备好，Agent 应按 [首次准备](skills/mijia-ac-control/references/setup.md) 引导用户完成。
+
+### 3. 准备仓库外的配置
 
 把示例复制到仓库**外面**。下面约定仓库、私有配置目录和授权状态目录是同级目录；后续命令均采用这组路径。
 
@@ -47,7 +73,7 @@ export MI_HOME_CONFIG_DIR="$(cd .. && pwd)/mijia-ac-state"
 
 先打开 `../mijia-ac-private/config.toml`，确认 `profile = "ac_control"`、`state_dir = "../mijia-ac-state"`。`state_dir` 相对于**配置文件所在目录**解析，须与 `MI_HOME_CONFIG_DIR` 指向同一位置。不要把它指向已有的其他账号状态目录。
 
-### 3. 在本机授权并识别设备
+### 4. 在本机授权并识别设备
 
 保持上一步设置的 `MI_HOME_CONFIG_DIR`，在**同一个终端**运行：
 
@@ -73,7 +99,7 @@ uv run --locked mi --profile ac_control --channel cloud spec show REPLACE_WITH_D
 
 此时私有配置中的 `device_id` 已替换，温度范围与步长已核对，`profile` 和 `state_dir` 与授权步骤一致，才算准备完成。配置无默认账号或隐式路径；每次调用都须传 `--config`。
 
-### 4. 先预览，再读取状态
+### 5. 先预览，再读取状态
 
 ```console
 uv run --locked mijia-ac --config ../mijia-ac-private/config.toml set-temp 24
@@ -84,7 +110,7 @@ uv run --locked mijia-ac --config ../mijia-ac-private/config.toml status
 
 例如，某个**虚构设备**的 `status` 可能返回 `{"on": true, "temperature": "24", "mode": 2}`。这里的 `24` 是目标温度；`2` 只是该设备的原始枚举，不能直接当作通用的“制冷”值。
 
-### 5. 明确要求实际控制时执行
+### 6. 明确要求实际控制时执行
 
 以下命令会改变真实设备状态。每次写入都须加 `--apply`；关机时设温或切换模式，只有明确允许**先开机**，才加 `--allow-power-on`。
 
@@ -95,22 +121,13 @@ uv run --locked mijia-ac --config ../mijia-ac-private/config.toml power off --ap
 
 开关机还支持 `power on`；模式切换支持 `mode cool|heat`，前提是已核对并填写对应枚举。若设备关机，`set-temp` 和 `mode` 默认停止且不写入；获得开机许可后，CLI 先开机并确认，再写目标值。写入后 CLI 进行独立回读；失败时停止，不自动重试或回滚，设备可能已经改变。云端回读匹配不代表物理制冷或制热已发生。
 
-## 可选：在 Hermes Agent 中使用
-
-如果只使用 CLI，跳过本节。Hermes Skill 需要单独安装；它不包含 Python CLI、设备配置或授权文件。先按上面的步骤准备好 CLI 与私有配置。
-
-前面已克隆本仓库。将其中的 `skills/mijia-ac-control` **整个目录**复制到本机 `~/.hermes/skills/mijia-ac-control/`，然后运行 `hermes skills list` 确认 Hermes 已发现它。若目标位置已有同名 Skill，先检查来源与内容，不要直接覆盖。安装位置及发现规则参见 [Hermes Skill 文档](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/skills.md)。
-
-新会话中可直接说“读取米家空调状态”或“把米家空调设定温度调到 24 度”，也可显式使用 `/mijia-ac-control`。首次使用时，只向 Agent 提供**本机仓库位置和私有配置文件路径**，不要提供配置内容、DID、授权码或设备清单。Agent 会根据 [SKILL.md](skills/mijia-ac-control/SKILL.md) 先确定目标与动作；路径不明时应停下询问，不能猜测其他账号或设备。安装后的 Skill 需要能在本机使用 `terminal` 调用已安装的 CLI。
-
-Hermes 安装 Skill 与安装 Python CLI 是两步；只完成其中一步，无法通过自然语言控制设备。安装后如当前会话未发现 Skill，开启新会话或按 Hermes 文档刷新。
-
 ## 兼容性与常见问题
 
 - 当前只支持 `cloud` 通道，并要求 `on`、目标温度和 `mode` 三个属性可读；模式值须为整数。设备 spec 不符时会停止，而不会猜测属性或设备。
 - CLI 只接受配置中的精确 DID。预览不证明设备在线；`status` 和 `--apply` 会访问云端。
 - 温度按配置的范围和步长精确检查，不舍入。`status` 的 `temperature` 是**设定温度**，不是室温。
 - 操作超时、回读不匹配或返回非零时，先在本机核对设备实际状态、网络、授权和 spec；不要自动重发写命令。
+- Agent 找不到 Skill 时，检查目录是否符合该客户端的发现规则；找得到 Skill 却无法执行时，检查本机命令工具、CLI、仓库和私有配置路径。Skill 不会替 Agent 增加终端权限或登录米家账号。
 - 需要了解实现细节和适配限制，见 [设计说明](DESIGN.md)；凭据处理与问题报告见 [安全说明](SECURITY.md)。
 
 ## 公开仓库与维护
@@ -123,7 +140,7 @@ uv run --locked pytest -q
 uv run --locked python tools/check_public_tree.py
 ```
 
-测试使用虚构数据和 fake runner，不登录真实账号或控制设备。公开检查器是静态防护，不能替代人工审查。测试和设计依据见 [Skill 质量约束](docs/skill-quality.md)、[评测说明](skills/mijia-ac-control/references/evaluation.md)；第三方来源及版权见 [第三方声明](THIRD_PARTY_NOTICES.md)。本项目由 yyyzl 维护，非小米官方产品，也非 Hermes 主仓库的一部分。
+测试使用虚构数据和 fake runner，不登录真实账号或控制设备。公开检查器是静态防护，不能替代人工审查。测试和设计依据见 [Skill 质量约束](docs/skill-quality.md)、[评测说明](skills/mijia-ac-control/references/evaluation.md)；第三方来源及版权见 [第三方声明](THIRD_PARTY_NOTICES.md)。本项目非小米官方产品。
 
 ### 不使用 uv
 

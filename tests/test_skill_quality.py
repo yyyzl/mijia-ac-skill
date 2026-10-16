@@ -1,6 +1,5 @@
 """Skill 契约检查：fixture 是记录式样例，不是模型执行证据。"""
 from pathlib import Path
-import ast
 import json
 import pytest
 
@@ -16,13 +15,11 @@ def frontmatter():
             for line in raw.splitlines() if ':' in line and not line[0].isspace()}
 
 
-def test_frontmatter_types_and_platforms():
+def test_portable_frontmatter():
     meta = frontmatter()
-    assert set(('name','description','version','author','license','platforms')) <= meta.keys()
-    assert ast.literal_eval(meta['platforms']) == ['windows','macos','linux']
-    assert ast.literal_eval(meta['version']) == '0.1.0'
-    assert ast.literal_eval(meta['author']) == 'yyyzl'
-    assert 'metadata' not in meta
+    assert set(meta) == {'name','description','license'}
+    assert meta['name'] == 'mijia-ac-control'
+    assert meta['license'] == 'MIT'
     assert len(meta['description']) <= 60
 
 

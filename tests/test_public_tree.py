@@ -62,7 +62,7 @@ def test_vendor_bytes_lf_and_attributes():
 @pytest.fixture
 def fixture_repo():
     import os, tempfile, subprocess
-    scratch = Path(os.environ.get('LOCALAPPDATA', tempfile.gettempdir()))/'hermes/cache/scratch'
+    scratch = Path(os.environ.get('LOCALAPPDATA', tempfile.gettempdir()))/'agent/cache/scratch'
     scratch.mkdir(parents=True, exist_ok=True)
     root = Path(tempfile.mkdtemp(prefix='mijia-public-fixture-', dir=scratch))
     subprocess.run(['git','init','-q',str(root)], check=True, capture_output=True)

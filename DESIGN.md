@@ -6,7 +6,7 @@
 
 ## 架构与关键决策
 
-terminal → argparse → TOML Config → Controller → 当前 Python 的固定 CLI 入口 → mi-home-cli cloud。
+Agent 的本机命令工具或终端 → argparse → TOML Config → Controller → 当前 Python 的固定 CLI 入口 → mi-home-cli cloud。
 
 - 配置文件必填，状态目录按文件位置解析且拒绝仓库内部；避免复用默认账号和提交授权。
 - 温度边界、步长必填，Decimal 校验；所有数字有限且限制数量级以控制计算成本。timeout 不超过 120 秒。

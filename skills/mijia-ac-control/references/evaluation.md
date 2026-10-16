@@ -25,4 +25,4 @@ uv run --locked python tools/check_public_tree.py
 
 ## 发布边界
 
-公开发布应包含 `SKILL.md`、执行所需的 `references/`、无真实绑定的配置示例、CLI 与固定上游源码、版权声明和离线测试。安装到 Hermes 的 Skill 只是 `skills/mijia-ac-control/`，不包含 Python CLI、配置或授权状态。用户应先在本机审查来源，再分别安装 CLI 与 Skill。
+公开发布应包含 `SKILL.md`、执行所需的 `references/`、无真实绑定的配置示例、CLI 与固定上游源码、版权声明和离线测试。供 Agent 装载的 Skill 目录是 `skills/mijia-ac-control/`；它不包含 Python CLI、配置或授权状态。用户应先在本机审查来源，再分别准备 CLI 与 Skill，并按所用 Agent 的发现规则安装。

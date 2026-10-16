@@ -9,9 +9,8 @@ compatibility:
     mode: "model_inferred"
   execution:
     context: "inline"
-    shell: "bash"
-    repository_context_required: true
-    operator_note: "在已克隆并安装的仓库中调用同一 Python CLI；手工 Windows 操作也可用 PowerShell，macOS 可用 zsh/bash。该字段不是系统沙箱或原生权限声明。"
+    repository_context_required: false
+    operator_note: "Agent 需有本机命令执行能力。uv 安装时在仓库中调用 CLI；pip 安装可在其他目录调用。根据当前系统选择 shell；此字段不是系统沙箱或原生权限声明。"
   trust:
     source_tier: "local"
     remote_inline_execution: "forbid"
