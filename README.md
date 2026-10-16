@@ -110,6 +110,8 @@ uv run --locked python tools/check_public_tree.py
 
 测试使用明确标记的虚构 fixtures 和 fake subprocess runner；精确 DID 和整数温度回归接入真实上游 Registry/Device、Property/parse_value 的纯内存对象。仅 `--help` 集成测试启动真实 wrapper 或适配入口，不连米家。GitHub Actions 配置 Ubuntu/Windows/macOS × Python 3.11/3.12，无账号、无 secrets，权限仅 contents:read。不要将该矩阵配置误认为所有平台已经本机跑过。
 
+两个第一方入口 `mijia-ac` 和 `python -m mijia_ac.upstream` 的标准输出、标准错误统一使用 UTF-8，重定向接收端应按 UTF-8 解码；受控 Python 子进程也显式使用 UTF-8。CI 为 pytest 和公开树检查等维护工具设置 `PYTHONUTF8=1`、`PYTHONIOENCODING=utf-8`；本地旧代码页环境运行维护命令时同样设置。入口回归另行覆盖关闭 UTF-8 模式并指定 cp1252 的环境，帮助文本断言按去除 ANSI 样式后的可见内容验证。
+
 发布检查器检查 git 已跟踪文件（即使已忽略）和未忽略的拟发布文件，拒绝常见凭据文件、真实配置、状态、设备绑定值、私人用户路径、虚拟环境、本地报告和链接；读取暂存 blob 并校验文件模式，同时检查未跟踪候选；工作树与暂存内容不同则拒绝并提示重新审查暂存，避免发布旧内容。vendor 的工作树与暂存快照分别核验全量 SHA256。`.gitattributes` 使一般文本 LF，vendor 禁止 Git 文本转换，逐文件字节以官方固定提交 blob 为准。它是静态防护，仍需人工审查新文件；认证实现中合法的 token 字段不会被当成凭据。开发报告应存仓库外。
 
 目录：

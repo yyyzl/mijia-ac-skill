@@ -23,6 +23,6 @@ Yao 引擎另行安装并保持只读，以 `python -B` 执行下面脚本；先
 
 本机独立检查：结构、资源边界、上下文、静态 trigger、IR、输出断言与 skill-only trust 检查通过。描述压缩至 44 字符，静态词汇代理的 18 例无误触发或漏触发；这不是模型路由效果。agents/interface.yaml 仅声明通用 Markdown 的中性接口、禁止远端内联执行和元数据降级，不生成额外客户端适配器或原生权限沙箱。结构检查保留 canonical Skill IR 来源回退警告；trust 保留 skill 内没有独立锁文件的警告。实际依赖锁位于仓库根 uv.lock，wrapper 网络/子进程边界由仓库测试和独立审查覆盖，skill-only trust 不能替代整仓库审计。上下文估算器将 JSONL 标为 binary_or_other，输出检查器和 pytest 单独覆盖该数据。
 
-missing evidence：统一 CLI 在 Windows 导入 fcntl 失败；完整 SkillOS2 compiler、Atlas、conformance、governance/promotion、package/install adapter、upgrade、drift、waiver、Review Studio、优化描述与盲测/route confusion 尚未运行或缺真实审查数据。未请求额外适配器的运行权限探针不适用；不能声称完整 SkillOS2 发布通过。盲审包已生成但无人判定，模型/物理设备/远端 macOS 和 Linux CI 证据缺失。CI 已配置三系统 × Python 3.11/3.12，须维护者推送后查看实际 Actions。
+missing evidence：统一 CLI 在 Windows 导入 fcntl 失败；完整 SkillOS2 compiler、Atlas、conformance、governance/promotion、package/install adapter、upgrade、drift、waiver、Review Studio、优化描述与盲测/route confusion 尚未运行或缺真实审查数据。未请求额外适配器的运行权限探针不适用；不能声称完整 SkillOS2 发布通过。盲审包已生成但无人判定，真实模型与物理设备证据仍缺失。三系统 × Python 3.11/3.12 的真实通过状态以对应提交的 Actions 结果为准；配置矩阵或触发运行不等于通过。
 
 独立 scratch 快照与干净检出核验上游 blob、vendor SHA256 和候选内容；wheel 仅 wrapper，sdist 必须含 vendor 源码、原始 MIT 许可证和 skill。维护者人工审查后安排发布。评测过程不提交或推送，也不访问账号或设备。原始报告默认不进入 Git；只发布去标识摘要和复跑方法。

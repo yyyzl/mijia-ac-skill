@@ -104,6 +104,13 @@ import subprocess
 import sys
 
 
+def configure_utf8_stdio():
+    """第一方入口统一输出 UTF-8；保留内存捕获流的行为。"""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(encoding='utf-8')
+
+
 class Controller:
     def __init__(self, config, runner=subprocess.run):
         self.config = config
@@ -117,6 +124,8 @@ class Controller:
         env = {k: v for k, v in os.environ.items() if not k.upper().startswith('MI_')
                and k.upper() not in ('PYTHONPATH', 'PYTHONHOME')}
         env['MI_HOME_CONFIG_DIR'] = str(c.state_dir)
+        env['PYTHONUTF8'] = '1'
+        env['PYTHONIOENCODING'] = 'utf-8'
         try:
             result = self.runner(args, shell=False, timeout=c.timeout, env=env,
                                  capture_output=True, text=True, encoding='utf-8')
@@ -196,6 +205,7 @@ class Controller:
 
 def main(argv=None):
     import argparse
+    configure_utf8_stdio()
     parser = argparse.ArgumentParser(description='米家空调双向设温；默认本地预览')
     parser.add_argument('--config', required=True, help='显式 TOML 配置路径')
     commands = parser.add_subparsers(dest='command', required=True)

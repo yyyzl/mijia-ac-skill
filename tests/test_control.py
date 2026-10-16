@@ -163,16 +163,33 @@ def test_cli_preview_and_error(tmp_path, capsys):
     assert 'Traceback' not in capsys.readouterr().err
 
 
-def test_installed_help():
-    import subprocess, shutil
+@pytest.mark.parametrize('legacy_encoding', [False, True])
+def test_installed_help(legacy_encoding):
+    import os, subprocess, shutil
     executable = shutil.which('mijia-ac')
     # pytest 可由 venv Python 直接运行，不要求调用者修改 PATH。
     if executable is None:
         import sys
         from pathlib import Path
         executable = str(Path(sys.executable).parent / ('mijia-ac.exe' if sys.platform=='win32' else 'mijia-ac'))
-    result = subprocess.run([executable, '--help'],capture_output=True,text=True,timeout=15,shell=False)
-    assert result.returncode == 0 and 'set-temp' in result.stdout
+    env = dict(os.environ)
+    if legacy_encoding:
+        env.update(PYTHONUTF8='0', PYTHONIOENCODING='cp1252')
+    result = subprocess.run([executable, '--help'],capture_output=True,text=True,encoding='utf-8',env=env,timeout=15,shell=False)
+    assert result.returncode == 0, (result.stdout, result.stderr)
+    assert 'set-temp' in result.stdout and '米家空调' in result.stdout, (result.stdout, result.stderr)
+
+
+def test_controlled_process_utf8_environment(tmp_path, monkeypatch):
+    from mijia_ac.cli import Controller
+    monkeypatch.setenv('PYTHONUTF8', '0')
+    monkeypatch.setenv('PYTHONIOENCODING', 'cp1252')
+    runner = FakeRunner([state()])
+    Controller(config(tmp_path), runner).status()
+    _, kwargs = runner.calls[0]
+    assert kwargs['encoding'] == 'utf-8'
+    assert kwargs['env']['PYTHONUTF8'] == '1'
+    assert kwargs['env']['PYTHONIOENCODING'] == 'utf-8'
 
 @pytest.mark.parametrize('failure', ['timeout','cloud','invalid-json'])
 def test_upstream_failure_safe(tmp_path, failure):

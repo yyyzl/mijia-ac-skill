@@ -2,6 +2,7 @@
 import contextlib
 import io
 import json
+import os
 import runpy
 import subprocess
 import sys
@@ -139,12 +140,71 @@ def test_entry_rejects_ref_other_than_bound_did(monkeypatch, ref):
     main(['--device-id', 'fixture-device', '--', '--help'])
 
 
+@pytest.mark.parametrize('stream_name', ['stdout', 'stderr'])
+@pytest.mark.parametrize('entry', ['cli', 'upstream'])
+def test_cli_utf8_streams(tmp_path, monkeypatch, stream_name, entry):
+    import io
+    import sys
+    from importlib import import_module
+    main = import_module('mijia_ac.' + entry).main
+    buffer = io.BytesIO()
+    stream = io.TextIOWrapper(buffer, encoding='cp1252')
+    monkeypatch.setattr(sys, stream_name, stream)
+    if stream_name == 'stdout':
+        with pytest.raises(SystemExit) as error:
+            main(['--help'])
+        assert error.value.code == 0
+        expected = '米家空调' if entry == 'cli' else '受控上游入口'
+    elif entry == 'cli':
+        assert main(['--config', str(tmp_path / 'fixture-missing.toml'), 'status']) == 1
+        expected = '错误：配置无效'
+    else:
+        with pytest.raises(SystemExit) as error:
+            main(['--device-id', 'fixture-device'])
+        assert error.value.code == 2
+        expected = '必须以 -- 分隔上游参数'
+    stream.flush()
+    assert expected in buffer.getvalue().decode('utf-8')
+
+
+@pytest.mark.parametrize('legacy_encoding', [False, True])
 @pytest.mark.parametrize('arguments', [[], ['--device-id', 'fixture-device', '--', '--help']])
-def test_entry_help_without_account(arguments):
+def test_entry_help_without_account(arguments, legacy_encoding):
+    env = dict(os.environ)
+    if legacy_encoding:
+        env.update(PYTHONUTF8='0', PYTHONIOENCODING='cp1252')
     result = subprocess.run([sys.executable, '-m', 'mijia_ac.upstream', *(arguments or ['--help'])],
-                            capture_output=True, text=True, timeout=15, shell=False)
-    assert result.returncode == 0
-    assert '--device-id' in result.stdout if not arguments else '--profile' in result.stdout
+                            capture_output=True, text=True, encoding='utf-8', env=env,
+                            timeout=15, shell=False)
+    assert result.returncode == 0, (result.stdout, result.stderr)
+    assert_help_output(result.stdout, '--profile' if arguments else '--device-id', result.stderr)
+
+
+def assert_help_output(stdout, option, stderr=''):
+    from rich.text import Text
+    plain = Text.from_ansi(stdout).plain
+    assert 'usage:' in plain.lower(), (stdout, stderr)
+    assert option in plain, (stdout, stderr)
+
+
+def test_upstream_help_with_ci_rich_console(monkeypatch):
+    from rich.console import Console
+    from typer import rich_utils
+    from mijia_ac.upstream import main
+    output = io.StringIO()
+    # 与 POSIX Actions 相同的强制终端/ANSI 路径，排除 Windows legacy 渲染。
+    monkeypatch.setattr(rich_utils, 'FORCE_TERMINAL', True)
+    monkeypatch.setattr(rich_utils, 'COLOR_SYSTEM', 'standard')
+    monkeypatch.setattr(rich_utils, 'MAX_WIDTH', 100)
+    monkeypatch.setattr(rich_utils, 'Console', lambda **kw: Console(
+        **kw, file=output, legacy_windows=False, no_color=False))
+    with pytest.raises(SystemExit) as error:
+        main(['--device-id', 'fixture-device', '--', '--help'])
+    assert error.value.code == 0
+    raw = output.getvalue()
+    assert '\x1b[' in raw
+    assert '--profile' not in raw
+    assert_help_output(raw, '--profile')
 
 
 def test_real_upstream_objects_match_fixed_vendor_bytes():

@@ -2,8 +2,11 @@
 import argparse
 import sys
 
+from .cli import configure_utf8_stdio
+
 
 def main(argv=None):
+    configure_utf8_stdio()
     parser = argparse.ArgumentParser(description='受控上游入口：仅允许指定的精确 DID')
     parser.add_argument('--device-id', required=True, help='配置指定的精确 DID')
     parser.add_argument('arguments', nargs=argparse.REMAINDER, help='-- 后的上游参数')
