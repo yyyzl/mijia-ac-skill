@@ -1,0 +1,47 @@
+{
+  "positive_concepts": {
+    "mijia_ac": {
+      "phrases": [
+        "米家空调",
+        "mijia ac"
+      ],
+      "weight": 1
+    }
+  },
+  "negative_concepts": {
+    "room": {
+      "phrases": [
+        "室温测量",
+        "room temperature"
+      ],
+      "weight": 1,
+      "exclusive": true
+    },
+    "automation": {
+      "phrases": [
+        "自动恒温",
+        "automate",
+        "thermostat"
+      ],
+      "weight": 1,
+      "exclusive": true
+    },
+    "account": {
+      "phrases": [
+        "账号客服",
+        "account support"
+      ],
+      "weight": 1,
+      "exclusive": true
+    },
+    "purchase": {
+      "phrases": [
+        "硬件选购",
+        "hardware purchase"
+      ],
+      "weight": 1,
+      "exclusive": true
+    }
+  },
+  "fallback_positive_concepts": []
+}

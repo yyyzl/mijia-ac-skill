@@ -1,0 +1,99 @@
+{
+  "recommended_threshold": 0.48,
+  "should_trigger": [
+    {
+      "text": "查米家空调状态",
+      "language": "zh",
+      "family": "status"
+    },
+    {
+      "text": "Read Mijia AC status",
+      "language": "en",
+      "family": "status"
+    },
+    {
+      "text": "米家空调设定温度提高一度",
+      "language": "zh",
+      "family": "temperature"
+    },
+    {
+      "text": "Lower Mijia AC target temperature",
+      "language": "en",
+      "family": "temperature"
+    },
+    {
+      "text": "关闭米家空调",
+      "language": "zh",
+      "family": "power"
+    },
+    {
+      "text": "Power on Mijia AC",
+      "language": "en",
+      "family": "power"
+    },
+    {
+      "text": "米家空调切换制热模式",
+      "language": "zh",
+      "family": "mode"
+    },
+    {
+      "text": "Set Mijia AC mode to heat",
+      "language": "en",
+      "family": "mode"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "翻译文章",
+      "language": "zh",
+      "family": "translation"
+    },
+    {
+      "text": "Translate this article",
+      "language": "en",
+      "family": "translation"
+    },
+    {
+      "text": "推荐硬件选购",
+      "language": "zh",
+      "family": "purchase"
+    },
+    {
+      "text": "Recommend hardware purchase",
+      "language": "en",
+      "family": "purchase"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "米家空调室温测量",
+      "language": "zh",
+      "family": "room"
+    },
+    {
+      "text": "Measure Mijia AC room temperature",
+      "language": "en",
+      "family": "room"
+    },
+    {
+      "text": "米家空调自动恒温",
+      "language": "zh",
+      "family": "automation"
+    },
+    {
+      "text": "Automate Mijia AC thermostat",
+      "language": "en",
+      "family": "automation"
+    },
+    {
+      "text": "米家空调账号客服",
+      "language": "zh",
+      "family": "account"
+    },
+    {
+      "text": "Mijia AC account support",
+      "language": "en",
+      "family": "account"
+    }
+  ]
+}

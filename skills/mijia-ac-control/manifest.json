@@ -1,0 +1,15 @@
+{
+  "name": "mijia-ac-control",
+  "version": "0.1.0",
+  "owner": "yyyzl",
+  "updated_at": "2026-10-16",
+  "status": "experimental",
+  "maturity_tier": "library",
+  "context_budget_tier": "library",
+  "review_cadence": "每次发布前复核；至少每季度复核平台、上游与安全边界",
+  "target_platforms": [
+    "windows",
+    "macos",
+    "linux"
+  ]
+}

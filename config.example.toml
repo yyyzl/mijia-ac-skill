@@ -1,0 +1,18 @@
+# 占位示例；先复制到仓库外并按自己的型号 spec 修改。
+device_id = "REPLACE_WITH_DEVICE_ID"
+profile = "fixture"
+# 相对于配置文件目录，放在仓库外；不可复用其他账号的状态。
+state_dir = "../ac-local-state"
+channel = "cloud"
+timeout = 20
+# 16/30/1 仅为示例，不保证适用于任何型号。
+min_temperature = 16
+max_temperature = 30
+temperature_step = 1
+on_property = "air-conditioner.on"
+temperature_property = "air-conditioner.target-temperature"
+mode_property = "air-conditioner.mode"
+# mode_cool / mode_heat 故意不提供值；先核对 spec 中的整数枚举再添加。
+
+# set-temp / mode 实际写入须 --apply；关机时额外 --allow-power-on。
+# 数值最多32位系数、指数绝对值<=32、文本<=128字符；超限拒绝，不舍入。

@@ -1,0 +1,26 @@
+name: offline-tests
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.11.3'
+          enable-cache: false
+      - run: uv sync --locked --python ${{ matrix.python }}
+      - run: uv run --locked mijia-ac --help
+      - run: uv run --locked python -c "import subprocess,sys; sys.exit(subprocess.run([sys.executable,'-m','pytest','-q'],timeout=60).returncode)"
+      - run: uv run --locked python tools/check_public_tree.py
